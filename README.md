@@ -1,2 +1,2 @@
-# -Statistical-Methods-for-Data-Science
-The aim of this project is to develop a predictive model that provides a reliable utilization forecast to update the Medicaid funding rate schedule of nursing facilities.
+# Statistical Methods for Data Science
+This project aims to develop a predictive model that provides a reliable utilization forecast to update nursing facilities' Medicaid funding rate schedule.
