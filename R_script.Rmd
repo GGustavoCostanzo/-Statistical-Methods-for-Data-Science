@@ -72,12 +72,13 @@ hist(datafile$ORGSTR, main = "Histogram of ORGSTR", xlab = "ORGSTR", col = "purp
 ##### **Analysis of quantitative variables**
 
 
-*Let's see the summary statistics for the quantitative variables*
+*Let's see the summary statistics*
 
 ```{r}
-summary(subset(datafile, select = c(TPY, SQRFOOT, NUMBED)))
+summary(datafile)
 ```
-*We can see the difference between the median and the mean which highlight right skewed  distribution of the variables, let's see this more clearly through a Box plot chart*
+
+*For categorical variables we can observe that they are unbalance. On the other hand, for the quantitative variables, we can see the difference between the median and the mean which highlight the fact that the distribution is right skewed. Let's see this more clearly the distribution for the quantitative variables through a Box plot chart. *
 
 ```{r}
 
@@ -92,8 +93,7 @@ boxplot(datafile$SQRFOOT, main = "Boxplot SQRFOOT")
 
 
 
-*We can see clearly that the distributions are right skewed, many outliers (observations outside of the whisker) the means of the TRY and NUMBED variables are close, while the mean for SRQFOOT is less than the half the others.*
-
+*We can see clearly that the distributions are right skewed, there are many outliers (observations outside of the whisker). In addtion, the means of the TRY and NUMBED variables are close, while the mean for SRQFOOT is less than the half the others.*
 
 
 ```{r}
@@ -106,36 +106,66 @@ ggpairs(subset(datafile, select = c(TPY, SQRFOOT, NUMBED)))
 
 *From the histograms and pair plots for the the non binary variables, we can see that the quantitative variables are skewed to the right. Then a log normal transformation of the variables should be useful for the statistical analysis*  
 *The variable MSA have a bi modal distribution with modes in approximately 0 and 12.*
-*With respect to the correlation, the quantitative variables TRY and NUMBED are highly correlated (0,984). This high correlation means that both variables have the same information, which should be redundant to include in a single model. On the other hand, the correlation of SQRFOOT with TRY and NUMBED is around 0.818.*
-
-
+*With respect to the correlation, the quantitative variables TRY and NUMBED are highly correlated (0,984). This high correlation means that both variables have the same information, which should be redundant to include in a single model. On the other hand, the correlation of SQRFOOT with TRY and NUMBED is around 0.818. Let's see the normality of the quantitative variables distribution*
 
 ```{r}
-library("dplyr")
-years_comparison <- datafile %>% 
-  group_by(hospID) %>%
-  summarise(SQRFOOT_2000 =  SQRFOOT[CRYEAR == 2000], SQRFOOT_2001 =  SQRFOOT[CRYEAR == 2001],
-            NUMBED_2000 = NUMBED[CRYEAR == 2000], NUMBED_2001 = NUMBED[CRYEAR == 2001],
-            TPY_2000 =  TPY[CRYEAR == 2000], TPY_2001 =  TPY[CRYEAR == 2001],
-            NUMBED_2000 = NUMBED[CRYEAR == 2000], NUMBED_2001 = NUMBED[CRYEAR == 2001],
-            MSA_2000 =  MSA[CRYEAR == 2000], MSA_2001 =  MSA[CRYEAR == 2001],
-            URBAN_2000 = URBAN[CRYEAR == 2000], URBAN_2001 = URBAN[CRYEAR == 2001],
-            TAXEXEMPT_2000 =  TAXEXEMPT[CRYEAR == 2000], TAXEXEMPT_2001 =  TAXEXEMPT[CRYEAR == 2001],
-            PRO_2000 = PRO[CRYEAR == 2000], PRO_2001 = PRO[CRYEAR == 2001],
-            MCERT_2000 =  MCERT[CRYEAR == 2000], MCERT_2001 =  MCERT[CRYEAR == 2001],
-            SELFFUNDINS_2000 = SELFFUNDINS[CRYEAR == 2000], SELFFUNDINS_2001 = SELFFUNDINS[CRYEAR == 2001],
-            ORGSTR_2000 =  ORGSTR[CRYEAR == 2000], ORGSTR_2001 =  ORGSTR[CRYEAR == 2001])
-           
-```
-```{r}
-years_comparison$NUMBED_diff <- years_comparison$NUMBED_2001-years_comparison$NUMBED_2000
-years_comparison$SQRFOOT_diff <- years_comparison$SQRFOOT_2001-years_comparison$SQRFOOT_2000
+par(mfrow = c(1,3))
+
+qqnorm(datafile$TPY, main = 'Q-Q Plot for Normality for TPY', xlab = 'Theoretical Dist',
+       ylab = 'Sample dist', col = 'steelblue')
+qqline(datafile$TPY, col = 'red', lwd = 2, lty = 2)
+
+qqnorm(datafile$NUMBED, main = 'Q-Q Plot for Normality for NUMBEB', xlab = 'Theoretical Dist',
+       ylab = 'Sample dist', col = 'steelblue')
+qqline(datafile$NUMBED, col = 'red', lwd = 2, lty = 2)
+
+qqnorm(datafile$SQRFOOT, main = 'Q-Q Plot for Normality for SQRFOOT', xlab = 'Theoretical Dist',
+       ylab = 'Sample dist', col = 'steelblue')
+qqline(datafile$SQRFOOT, col = 'red', lwd = 2, lty = 2)
 ```
 
 ```{r}
-years_comparison
+par(mfrow = c(1,3))
+
+library(qqplotr)
+
+qgamma(datafile$NUMBED, shape= 2)
+qqline(datafile$TPY, col = 'red', lwd = 2, lty = 2)
+
+qqplot(datafile$NUMBED,  "gamma", main = 'Q-Q Plot for Normality for NUMBEB', xlab = 'Theoretical Dist',
+       ylab = 'Sample dist', col = 'steelblue')
+qqplot(datafile$NUMBED, col = 'red', lwd = 2, lty = 2)
+
+qqplot(datafile$SQRFOOT, "gamma", main = 'Q-Q Plot for Normality for SQRFOOT', xlab = 'Theoretical Dist',
+       ylab = 'Sample dist', col = 'steelblue')
+qqline(datafile$SQRFOOT, col = 'red', lwd = 2, lty = 2)
 ```
 
+*As we can observe in the Q-Q plots none of the quantitative variables has a normal distribution* 
+
+*Our aim is to predict the utilization the nursing houses and the candidate response variable is TPY. Let's see the values for the mean and variance:*
+
+```{r}
+mean(datafile$TPY)
+```
+
+```{r}
+var(datafile$TPY)
+```
+
+*Since this variable is right skewed distributed, continuous, and with a mean and variance significantly different, we assume that the variable TPY follows a Gamma distribution. Let's shows this through a QQ plot chart*
+
+```{r}
+#CHECK WHETHER OR NOT TPY IS GAMMA DISTRIBUTED
+library(MASS)
+library(qqplotr)
+TPY_test <- datafile$TPY[datafile$TPY < 250]
+fit <- fitdistr(datafile$TPY, "gamma")
+qgamma <- rgamma(701, shape=fit$estimate[1], rate = fit$estimate[2])
+qqplot(TPY_test, qgamma, main = "Q-Q Plot of TPY against Gamma Distribution")+abline(0,1, col="red")
+```
+
+*The qqplot chart shows that our hypothesis about the distribution of the variable TPY is correct since the observations follow a gamma distribution*  
 
 
 **Let's transform the skewed quantitative variables with the log function**
@@ -196,11 +226,25 @@ ggpairs(subset(datafile_log, select = c(TPY_log, NUMBED_log, SQRFOOT_log)))
 ```
 
 
-*As we can see in the pair plot chart, the values for the correlation between the log transformed variables are approximately the same than the original ones. However, increase the linear association of SQRFOOT with variables TPY and NUMBED*
+*As we can see in the pair plot chart, the values for the correlation between the log transformed variables are approximately the same than the original ones. However, increase the linear association of SQRFOOT with variables TPY and NUMBED. Let's see the normality of the log transformed quantitative variables*
+
+```{r}
+par(mfrow = c(1,3))
+
+qqnorm(datafile_log$TPY_log, main = 'Q-Q Plot for Normality for TPY', xlab = 'Theoretical Dist',
+       ylab = 'Sample dist', col = 'steelblue')
+qqline(datafile_log$TPY_log, col = 'red', lwd = 2, lty = 2)
+
+qqnorm(datafile_log$NUMBED_log, main = 'Q-Q Plot for Normality for NUMBEB', xlab = 'Theoretical Dist',
+       ylab = 'Sample dist', col = 'steelblue')
+qqline(datafile_log$NUMBED_log, col = 'red', lwd = 2, lty = 2)
+
+qqnorm(datafile_log$SQRFOOT_log, main = 'Q-Q Plot for Normality for SQRFOOT', xlab = 'Theoretical Dist',
+       ylab = 'Sample dist', col = 'steelblue')
+qqline(datafile_log$SQRFOOT_log, col = 'red', lwd = 2, lty = 2)
+```
 
 ##### *Analysis of categorical variables*
-Let's analyse the relationship between explained variable TPY and categorical variables of the dataset. 
-
 
 ```{r}
 par(mfrow=c(1,2))
@@ -222,18 +266,6 @@ boxplot(TPY ~ ORGSTR, data = datafile, horizontal = TRUE,
         xlab = "TPY", ylab = "ORGSTR")
 ```
 
-```{r}
-par(mfrow = c(1, 2))
-barplot(prop.table(table(datafile$PRO, datafile$TAXEXEMPT), margin = 1),
-        beside=TRUE, xlab="TAX EXEMPT",col=c("gray","black"))
-legend("topright", c("Non Profit", "Profit"), cex = 0.95, bty = "n",fill=c("gray","black"))
-
-
-barplot(prop.table(table(datafile$PRO, datafile$SELFFUNDINS), margin = 1),
-        beside=TRUE, xlab="SELFUNDINS",col=c("gray","black"))
-legend("topleft", c("Non Profit", "Profit"), cex = 0.95, bty = "n",fill=c("gray","black"))
-
-```
 
 
 ##### *Data pre-processing*
@@ -273,10 +305,14 @@ datafile$MSA <- as.factor(datafile$MSA)
 df_2000 <- datafile[datafile$CRYEAR == "2000", ]
 df_2000
 ```
+
+
 ```{r}
 df_2001 <- datafile[datafile$CRYEAR == "2001", ]
 df_2001
 ```
+
+
 
 
 
